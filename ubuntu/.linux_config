@@ -1,0 +1,21 @@
+# Check if Bash completion is already installed
+if ! dpkg -l | grep -q "bash-completion"; then
+  echo "Installing Bash completion..."
+  sudo apt update
+  sudo apt install -y bash-completion
+fi
+
+# Check if the completion script file exists and is readable
+completion_script="/etc/profile.d/bash_completion.sh"
+if [[ -f "$completion_script" && -r "$completion_script" ]]; then
+  source "$completion_script"
+elif [[ -f /usr/share/bash-completion/bash_completion ]]; then
+  source /usr/share/bash-completion/bash_completion
+elif [[ -f /etc/bash_completion ]]; then
+  source /etc/bash_completion
+fi
+
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-up '[]'
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-down '[]'
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-up '[]'
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-down '[]'

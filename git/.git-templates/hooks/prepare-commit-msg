@@ -1,0 +1,14 @@
+#!/bin/bash
+
+MESSAGE=$(cat $1)
+TICKET=$(git rev-parse --abbrev-ref HEAD | grep -Eo '[a-zA-Z]+-[0-9]+' | head -n 1 | tr "[:lower:]" "[:upper:]")
+
+if [[ -z "$TICKET" ]]; then
+  # TICKET is empty
+  exit 0
+elif [[ "$MESSAGE" == *"$TICKET"* ]]; then
+  echo "Ticket found in commit message. Skipping..."
+  exit 0
+fi
+
+echo "$TICKET: $MESSAGE" > $1
