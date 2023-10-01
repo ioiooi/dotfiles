@@ -65,7 +65,7 @@ install_vscode() {
 install_insomnia() {
   local package_name="insomnia"
   if ! package_installed "$package_name"; then
-    local insomnia_url="https://updates.insomnia.rest/downloads/ubuntu/latest?&app=com.insomnia.app&source=website"
+    local insomnia_url="https://github.com/Kong/insomnia/releases/download/core%402023.5.8/Insomnia.Core-2023.5.8.deb"
     install_deb_package "$package_name" "$insomnia_url"
   else
     echo "$package_name is already installed."

@@ -52,7 +52,7 @@ install_snap_app() {
 install_snap_package_manager
 
 # List of snap apps to be installed
-snap_apps=("code" "phpstorm" "slack" "spotify" "insomnia" "node" "tldr")
+snap_apps=("code" "phpstorm" "slack" "spotify" "tldr")
 
 # Install snap apps
 for app in "${snap_apps[@]}"; do
