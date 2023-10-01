@@ -66,11 +66,7 @@ function askForConfirmation() {
 }
 
 function main() {
-  if [[ "$1" == "--force" || "$1" == "-f" ]]; then
-    copyFilesToHome
-  else
-    askForConfirmation
-  fi
+  askForConfirmation
 }
 
 echo "Starting the script..."
