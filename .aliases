@@ -63,5 +63,5 @@ alias reload="exec ${SHELL} -l"
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
 
-# cleans up everything docker related
-alias docker-prune-all='docker system prune -a -f && docker volume rm $(docker volume ls -f dangling=true -q)'
+# stops and deletes everything
+alias docker-purge='docker stop $(docker ps -aq) && docker system prune -a -f --volumes'
