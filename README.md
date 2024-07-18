@@ -1,12 +1,12 @@
 # dotfiles
 
-**Based on https://github.com/mathiasbynens/dotfiles**
+**Based on <https://github.com/mathiasbynens/dotfiles>**
 
 ![Screenshot of my shell prompt](https://i.imgur.com/EkEtphC.png)
 
 > Shell prompt based on the Solarized Dark theme.  
-Screenshot: http://i.imgur.com/EkEtphC.png  
-Heavily inspired by @necolas’s prompt: https://github.com/necolas/dotfiles  
+Screenshot: <http://i.imgur.com/EkEtphC.png>  
+Heavily inspired by @necolas’s prompt: <https://github.com/necolas/dotfiles>  
 iTerm → Profiles → Text → use 13pt Monaco with 1.1 vertical spacing.
 
 ## Installation
@@ -48,4 +48,3 @@ export PATH="/usr/local/bin:$PATH"
 ### Add custom commands
 
 If `~/.extra` exists, it will be sourced along with the other files. You can use this to add a few custom commands you don’t want to commit to a public repository.
-

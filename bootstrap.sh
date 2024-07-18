@@ -62,6 +62,8 @@ function askForConfirmation() {
   echo ""
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     copyFilesToHome
+  else
+    echo "Operation cancelled by user."
   fi
 }
 
