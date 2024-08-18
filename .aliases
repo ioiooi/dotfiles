@@ -67,4 +67,4 @@ alias path='echo -e ${PATH//:/\\n}'
 alias docker-stop='docker stop $(docker ps -aq)'
 
 # stops and deletes everything
-alias docker-purge='docker stop $(docker ps -aq) && docker system prune -a -f --volumes'
+alias docker-purge='docker ps -q | xargs -r docker stop && docker system prune -a -f --volumes'
