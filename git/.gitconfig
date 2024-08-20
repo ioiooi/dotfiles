@@ -75,6 +75,8 @@
 	# moves files from staging area to working directory
 	unstage = !git restore --staged --
 
+	pfwl = push --force-with-lease
+
 [apply]
 
 	# Detect whitespace errors when applying a patch.
