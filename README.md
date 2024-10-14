@@ -9,42 +9,38 @@ Screenshot: <http://i.imgur.com/EkEtphC.png>
 Heavily inspired by @necolas’s prompt: <https://github.com/necolas/dotfiles>  
 iTerm → Profiles → Text → use 13pt Monaco with 1.1 vertical spacing.
 
+## Features
+
+- **Aliases**: Shortcuts for easier navigation and common commands.
+- **Bash Profile**: Sets up useful shell options like case-insensitive globbing, history appending, and autocorrect for `cd`.
+- **Exports and Functions**: Environment variable exports and useful shell functions for tasks like git automation and Docker.
+- **Cross-Platform**: Includes platform-specific configurations for macOS and Linux.
+
 ## Installation
 
-### Using Git and the bootstrap script
+1. Clone the repository to your home directory:
 
-You can clone the repository wherever you want.
-
-```bash
-git clone https://github.com/mathiasbynens/dotfiles.git && cd dotfiles && source bootstrap.sh
+```sh
+git clone git@github.com:ioiooi/dotfiles.git && cd dotfiles
 ```
 
-To update, `cd` into your local `dotfiles` repository and then:
+2. Run the bootstrap script to copy the configuration files:
 
-```bash
-git pull && source bootstrap.sh
+```sh
+source bootstrap.sh
 ```
 
-### Git-free install
+## Customization
 
-To install these dotfiles without Git:
+- **Aliases**: Modify .aliases to add or change shortcuts.
+- **Exports**: Use .exports to define environment variables.
+- **Functions**: Extend functionality by adding custom functions in .functions.
 
-```bash
-cd; curl -#L https://github.com/mathiasbynens/dotfiles/tarball/main | tar -xzv --strip-components 1 --exclude={README.md,bootstrap.sh,.osx,LICENSE-MIT.txt}
-```
+To add machine-specific settings **without committing to the repository**, create the following files in your home directory:
 
-To update later on, just run that command again.
+- `~/.path`: For custom `$PATH` settings.
+- `~/.extra`: For any other settings or commands.
 
-### Specify the `$PATH`
+## Backup
 
-If `~/.path` exists, it will be sourced along with the other files, before any feature testing (such as [detecting which version of `ls` is being used](https://github.com/ioiooi/dotfiles/blob/67f86947e4989fabb7681005523ce50977d356f0/.aliases#L12-L17)) takes place.
-
-Here’s an example `~/.path` file that adds `/usr/local/bin` to the `$PATH`:
-
-```bash
-export PATH="/usr/local/bin:$PATH"
-```
-
-### Add custom commands
-
-If `~/.extra` exists, it will be sourced along with the other files. You can use this to add a few custom commands you don’t want to commit to a public repository.
+Before overwriting any existing configuration files, the `bootstrap.sh` script creates backups in `~/.dotfiles_backup`.
