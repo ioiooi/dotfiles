@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
+# Get the directory of this script
 cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# Core files that should always be included
 FILES_TO_INCLUDE=(
   ".aliases"
   ".bash_profile"
@@ -13,48 +16,50 @@ FILES_TO_INCLUDE=(
   "git/.gitignore"
 )
 
+# OS-specific configurations
 if [[ -f "ubuntu/.linux_config" && "$(uname -s)" == "Linux" ]]; then
   FILES_TO_INCLUDE+=("ubuntu/.linux_config")
+  echo "Including Linux configuration"
 fi
 
 if [[ -f "mac/.mac_config" && "$(uname -s)" == "Darwin" ]]; then
   FILES_TO_INCLUDE+=("mac/.mac_config")
+  echo "Including macOS configuration"
 fi
 
-BACKUP_DIR="$HOME/.dotfiles_backup"
+# Setup backup directory
+BACKUP_DIR="$HOME/.dotfiles_backup/$(date +'%Y%m%d_%H%M%S')"
 mkdir -p "$BACKUP_DIR"
+echo "Created backup directory: $BACKUP_DIR"
 
-function createBackup() {
+createBackup() {
   local file="$1"
-  local timestamp="$(date +'%Y-%m-%d_%H:%M:%S')"
-  local backup_file="$BACKUP_DIR/$(basename "$file").backup_${timestamp}"
-
-  if [[ ! -e "$backup_file" ]]; then
-    cp -r "$file" "$backup_file"
-    echo "Backup created: $backup_file"
-  else
-    echo "Backup already exists: $backup_file"
+  if [[ -e "$file" ]]; then
+    cp -r "$file" "$BACKUP_DIR/$(basename "$file")"
+    echo "Backed up: $file"
   fi
 }
 
-function copyFilesToHome() {
-  echo "Copying files to the home directory..."
+copyFilesToHome() {
+  echo "Starting file copy process..."
+  
   for item in "${FILES_TO_INCLUDE[@]}"; do
     local destination="$HOME/$(basename "$item")"
-
-    echo "$item"
-    echo "$destination"
-
+    echo "Processing: $item"
+    
     if [[ -e "$destination" ]]; then
       createBackup "$destination"
     fi
-
-    rsync -ah --no-perms "$item" ~
-    echo "Copied: $item"
+    
+    cp -r "$item" "$HOME/"
+    echo "Copied: $item -> ~"
   done
-  echo "Files copied."
-
-  source "$HOME/.bash_profile" && echo "Bash profile sourced."
+  
+  # Source bash_profile if it exists
+  if [[ -f "$HOME/.bash_profile" ]]; then
+    source "$HOME/.bash_profile"
+    echo "Sourced .bash_profile"
+  fi
 }
 
 function askForConfirmation() {
@@ -64,6 +69,7 @@ function askForConfirmation() {
     copyFilesToHome
   else
     echo "Operation cancelled by user."
+    exit 0
   fi
 }
 
