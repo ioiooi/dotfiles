@@ -21,9 +21,10 @@ setup_bash_completion() {
 
 configure_keyboard_layout() {
   current_layout=$(gsettings get org.gnome.desktop.input-sources sources)
-  if [[ "$current_layout" != "[('xkb', 'us+alt-intl')]" ]]; then
-    echo "Configuring keyboard layout to US alt-intl..."
-    gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us+alt-intl')]"
+  if [[ "$current_layout" != "[('xkb', 'us+de_se_fi')]" ]]; then
+    echo "Configuring keyboard layout to us+de_se_fi..."
+    gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us+de_se_fi')]"
+    gsettings set org.gnome.desktop.input-sources xkb-options "['lv3:lalt_switch']"
     echo "Keyboard layout configured"
   fi
 }
