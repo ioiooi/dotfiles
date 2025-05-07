@@ -62,9 +62,3 @@ alias reload="exec ${SHELL} -l"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
-
-# stops everything
-alias docker-stop='docker stop $(docker ps -aq)'
-
-# stops and deletes everything
-alias docker-purge='docker ps -q | xargs -r docker stop && docker system prune -a -f --volumes'

@@ -90,3 +90,66 @@ git_amend_to_commit() {
 dexec() {
 	docker exec -it "$1" /bin/sh
 }
+
+docker-stop() {
+  echo "🛑 Stopping all running Docker containers..."
+  if [ -n "$(docker ps -q)" ]; then
+    docker stop $(docker ps -q)
+    echo "✅ All containers stopped successfully!"
+  else
+    echo "ℹ️ No running containers found."
+  fi
+}
+
+docker-purge() {
+  echo "⚠️  WARNING: This will remove ALL Docker containers, images, volumes, networks, and build cache!"
+  read -p "Are you sure you want to continue? (y/N) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Operation cancelled."
+    return 1
+  fi
+  
+  echo "🛑 Stopping all containers..."
+  if [ -n "$(docker ps -q)" ]; then
+    docker stop $(docker ps -q)
+  else
+    echo "  No running containers found."
+  fi
+
+  echo "🗑️ Removing all containers..."
+  if [ -n "$(docker ps -aq)" ]; then
+    docker rm $(docker ps -aq)
+  else
+    echo "  No containers found."
+  fi
+
+  echo "🧹 Removing all images..."
+  if [ -n "$(docker images -q)" ]; then
+    docker rmi -f $(docker images -q)
+  else
+    echo "  No images found."
+  fi
+
+  echo "📦 Removing all volumes..."
+  if [ -n "$(docker volume ls -q)" ]; then
+    docker volume rm $(docker volume ls -q)
+  else
+    echo "  No volumes found."
+  fi
+
+  echo "🌐 Removing all custom networks..."
+  if [ -n "$(docker network ls -q --filter type=custom)" ]; then
+    docker network rm $(docker network ls -q --filter type=custom)
+  else
+    echo "  No custom networks found."
+  fi
+
+  echo "🔨 Removing build cache..."
+  docker builder prune -f
+
+  echo "🧽 Removing system cache (including unused images)..."
+  docker system prune -af
+
+  echo "✅ Docker cleanup complete!"
+}
