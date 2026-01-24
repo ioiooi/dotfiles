@@ -4,8 +4,6 @@
 ./add_repositories.sh
 ./install_packages.sh
 ./install_applications.sh
-./install_nodejs.sh
-./install_apps.sh
 ./install_snap_apps.sh
 ./install_nerd_fonts.sh
 

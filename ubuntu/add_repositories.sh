@@ -55,7 +55,7 @@ function add_nvidia_drivers_repository() {
 
 function add_spotify_repository() {
   curl -sS https://download.spotify.com/debian/pubkey_7A3A762FAFD4A51F.gpg | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
-  echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
+  echo "deb https://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 }
 
 function add_insomnia_repository() {
@@ -63,7 +63,11 @@ function add_insomnia_repository() {
 }
 
 function add_symfony_repository() {
-  curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | sudo -E bash
+  local tmp_script=$(mktemp)
+  curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' -o "$tmp_script"
+  echo "Downloaded Symfony setup script to $tmp_script - review before execution if needed"
+  sudo -E bash "$tmp_script"
+  rm -f "$tmp_script"
 }
 
 # Update package list
@@ -76,7 +80,6 @@ install_required_tools
 
 # Add repositories
 add_git_repository
-add_nodejs_repository
 add_vscode_repository
 add_openjdk_repository
 add_php_repository
