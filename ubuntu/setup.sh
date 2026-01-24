@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Execute the individual scripts
 ./add_repositories.sh

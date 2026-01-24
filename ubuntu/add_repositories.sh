@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Add Third-Party Repositories
 #
@@ -24,6 +25,8 @@ function add_git_repository() {
 
 # IDEs and Editors
 function add_vscode_repository() {
+  # Microsoft GPG key fingerprint: BC52 8686 B50D 79E3 39D3 721C EB3E 94AD BE12 29CF
+  echo "Adding Microsoft VS Code repository (verify key fingerprint: BC52 8686 B50D 79E3 39D3 721C EB3E 94AD BE12 29CF)"
   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
   sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
   sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'

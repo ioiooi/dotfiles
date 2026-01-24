@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+# Prevent running as root
+if [[ $EUID -eq 0 ]]; then
+  echo "Error: Do not run this script as root or with sudo."
+  echo "The script will ask for sudo when needed."
+  exit 1
+fi
 
 # Get the directory of this script
 cd "$(dirname "${BASH_SOURCE[0]}")"
