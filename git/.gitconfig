@@ -56,9 +56,8 @@
 	# Find commits by commit message
 	fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
-	# Remove branches that have already been merged with main.
-	# a.k.a. ‘delete merged’
-	cleanup = "!git branch --merged | grep -v -E '(^\\*|master|main|dev)' | xargs -n 1 git branch -d"
+	# Remove local branches whose remote tracking branch no longer exists
+	cleanup = "!git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -n 1 git branch -d"
 
 	# Removes refs to branches which no longer exist
 	pr = "!git remote | xargs -n 1 git remote prune"
@@ -75,7 +74,14 @@
 	# moves files from staging area to working directory
 	unstage = !git restore --staged --
 
+	# Force push with lease to avoid overwriting others' changes
 	pfwl = push --force-with-lease
+
+	# Show recently checked out branches (default: last 10)
+	recent = "!f() { git reflog show --pretty=format:'%gs ~ %gd' --date=relative | grep 'checkout:' | grep -oE '[^ ]+ ~ .*' | awk -F~ '!seen[$1]++' | head -n \"${1:-10}\"; }; f"
+
+	# List local branches that have no remote tracking branch
+	local-only = "!git branch --format='%(refname:short) %(upstream)' | awk '!$2 {print $1}'"
 
 [apply]
 
