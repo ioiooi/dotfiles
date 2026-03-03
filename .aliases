@@ -66,3 +66,6 @@ alias reload="exec ${SHELL} -l"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
+
+# YOLO mode - Claude Code without safety nets 🎢
+alias yolo="claude --dangerously-skip-permissions"
