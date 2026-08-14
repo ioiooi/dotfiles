@@ -187,5 +187,9 @@
 
 [user]
 
-	name = Eugen Mayer
-	email = eugen.mayer2@gmail.com
+	# Identity lives in ~/.gitconfig.local. Never here: this repo is public.
+	useConfigOnly = true
+
+[include]
+
+	path = ~/.gitconfig.local
