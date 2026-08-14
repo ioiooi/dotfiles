@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 # Create a new directory and enter it
-function mkd() {
+mkd() {
 	if (( $# == 0 )); then
 		echo "usage: mkd <dir> [dir ...]" >&2;
 		return 2;
@@ -13,12 +13,13 @@ function mkd() {
 #
 # Usage: fs [file/directory ...]
 #
-function fs() {
+fs() {
+	local arg;
 	if du -b /dev/null > /dev/null 2>&1; then
-		local arg=-sbh;
+		arg=-sbh;
 	else
-		local arg=-sh;
-	fi
+		arg=-sh;
+	fi;
 	if (( $# )); then
 		du "$arg" -- "$@";
 	else
@@ -38,8 +39,8 @@ function fs() {
 # Usage:
 #   wdiff file1 file2
 #
-if hash git &>/dev/null; then
-	function wdiff() {
+if hash git &> /dev/null; then
+	wdiff() {
 		git diff --no-index --color-words "$@";
 	}
 fi;
@@ -48,161 +49,153 @@ fi;
 # the `.git` directory, listing directories first. The output gets piped into
 # `less` with options to preserve color and line numbers, unless the output is
 # small enough for one screen.
-function tre() {
-	if ! hash tree &>/dev/null; then
+tre() {
+	if ! hash tree &> /dev/null; then
 		echo "tre: tree is not installed" >&2;
 		return 1;
 	fi;
-	tree -aC -I '.git|node_modules|.venv|__pycache__|dist|target|.next' --dirsfirst "$@" | less -FRNX;
+	tree -aC -I '.git|node_modules|.venv|__pycache__|dist|target|.next' --dirsfirst "$@" | less -FRN;
 }
 
 # gcm: Shortcut for 'git commit -m'.
 #
-# This function is a shortcut for the 'git commit -m' command, allowing you to quickly
-# create a commit with a specified commit message.
-#
 # Usage:
 #   gcm <commit-message>
-#
-# Parameters:
-#   <commit-message>: The message to be used for the commit.
 #
 # Example:
 #   gcm "Fix typo in README"
 #
-function gcm {
-  if (( $# == 0 )); then
-    echo "usage: gcm <commit-message>" >&2
-    return 2
-  fi
-  git commit -m "$*"
+gcm() {
+	if (( $# == 0 )); then
+		echo "usage: gcm <commit-message>" >&2;
+		return 2;
+	fi;
+	git commit -m "$*";
 }
 
 # git_amend_to_commit(): Amend current changes to a specific commit.
 #
-# This function takes a target commit as an argument and facilitates the process of amending
-# current changes into the commit history. It creates a "fixup" commit with the changes and
-# then performs an interactive rebase, combining the fixup commit with the specified commit.
+# Creates a "fixup" commit with the staged changes, then runs an interactive
+# rebase with --autosquash to fold it into the target commit.
 #
 # Usage:
 #   git_amend_to_commit <target-commit>
-#
-# Parameters:
-#   <target-commit>: The commit to which current changes should be amended.
 #
 # Example:
 #   git_amend_to_commit abc123
 #   git_amend_to_commit HEAD~3
 #
 git_amend_to_commit() {
-	local target_commit=$1
+	local target_commit=$1;
 
 	if [[ -z "$target_commit" ]]; then
-		echo "usage: git_amend_to_commit <target-commit>" >&2
-		return 2
-	fi
+		echo "usage: git_amend_to_commit <target-commit>" >&2;
+		return 2;
+	fi;
 
 	# Resolve to a fixed sha first: the fixup commit below shifts what a
 	# relative ref such as HEAD~3 points at.
-	local target_sha
+	local target_sha;
 	if ! target_sha=$(git rev-parse --verify --quiet "${target_commit}^{commit}"); then
-		echo "git_amend_to_commit: not a commit: $target_commit" >&2
-		return 2
-	fi
+		echo "git_amend_to_commit: not a commit: $target_commit" >&2;
+		return 2;
+	fi;
 
-	git commit --fixup="$target_sha" || return
+	git commit --fixup="$target_sha" || return;
 
 	if git rev-parse --verify --quiet "${target_sha}~1" > /dev/null; then
-		git rebase -i --autosquash "${target_sha}~1"
+		git rebase -i --autosquash "${target_sha}~1";
 	else
 		# The target is the first commit and has no parent to rebase onto.
-		git rebase -i --autosquash --root
-	fi
+		git rebase -i --autosquash --root;
+	fi;
 }
 
 # Run a command in a Docker container, or an interactive shell when none is given
 dexec() {
 	if (( $# == 0 )); then
-		echo "usage: dexec <container> [cmd ...]" >&2
-		return 2
-	fi
+		echo "usage: dexec <container> [cmd ...]" >&2;
+		return 2;
+	fi;
 
-	local container=$1
-	shift
+	local container=$1;
+	shift;
 
 	if (( $# )); then
-		docker exec -it "$container" "$@"
+		docker exec -it "$container" "$@";
 	else
-		docker exec -it "$container" bash 2> /dev/null || docker exec -it "$container" sh
-	fi
+		docker exec -it "$container" bash 2> /dev/null || docker exec -it "$container" sh;
+	fi;
 }
 
+# Stop every running container
 docker-stop() {
-  local ids
-  ids=$(docker ps -q) || return
+	local ids;
+	ids=$(docker ps -q) || return;
 
-  if [[ -z "$ids" ]]; then
-    echo "ℹ️ No running containers found."
-    return 0
-  fi
+	if [[ -z "$ids" ]]; then
+		echo "ℹ️ No running containers found.";
+		return 0;
+	fi;
 
-  echo "🛑 Stopping all running Docker containers..."
-  # $ids unquoted: one argument per container id
-  if docker stop $ids; then
-    echo "✅ All containers stopped successfully!"
-  else
-    echo "❌ Some containers could not be stopped." >&2
-    return 1
-  fi
+	echo "🛑 Stopping all running Docker containers...";
+	# $ids unquoted: one argument per container id
+	if docker stop $ids; then
+		echo "✅ All containers stopped successfully!";
+	else
+		echo "❌ Some containers could not be stopped." >&2;
+		return 1;
+	fi;
 }
 
+# Remove all Docker data. Irreversible, so it asks first.
 docker-purge() {
-  echo "WARNING: This will remove ALL Docker data (containers, images, volumes, networks, build cache)!"
-  read -r -p "Are you sure you want to continue? (y/N) " -n 1
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Operation cancelled."
-    return 1
-  fi
+	echo "WARNING: This will remove ALL Docker data (containers, images, volumes, networks, build cache)!";
+	read -r -p "Are you sure you want to continue? (y/N) " -n 1;
+	echo;
+	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+		echo "Operation cancelled.";
+		return 1;
+	fi;
 
-  local -a failed=()
-  local ids
+	local -a failed=();
+	local ids;
 
-  # Every $ids below is unquoted on purpose: one argument per id.
-  echo "Stopping all containers..."
-  ids=$(docker ps -q)
-  if [[ -n "$ids" ]]; then
-    docker stop $ids || failed+=("stop containers")
-  fi
+	# Every $ids below is unquoted on purpose: one argument per id.
+	echo "Stopping all containers...";
+	ids=$(docker ps -q);
+	if [[ -n "$ids" ]]; then
+		docker stop $ids || failed+=("stop containers");
+	fi;
 
-  echo "Removing all containers..."
-  ids=$(docker ps -aq)
-  if [[ -n "$ids" ]]; then
-    docker rm -f $ids || failed+=("remove containers")
-  fi
+	echo "Removing all containers...";
+	ids=$(docker ps -aq);
+	if [[ -n "$ids" ]]; then
+		docker rm -f $ids || failed+=("remove containers");
+	fi;
 
-  echo "Removing all images (including intermediate layers)..."
-  ids=$(docker images -aq)
-  if [[ -n "$ids" ]]; then
-    docker rmi -f $ids || failed+=("remove images")
-  fi
+	echo "Removing all images (including intermediate layers)...";
+	ids=$(docker images -aq);
+	if [[ -n "$ids" ]]; then
+		docker rmi -f $ids || failed+=("remove images");
+	fi;
 
-  echo "Removing all volumes..."
-  ids=$(docker volume ls -q)
-  if [[ -n "$ids" ]]; then
-    docker volume rm -f $ids || failed+=("remove volumes")
-  fi
+	echo "Removing all volumes...";
+	ids=$(docker volume ls -q);
+	if [[ -n "$ids" ]]; then
+		docker volume rm -f $ids || failed+=("remove volumes");
+	fi;
 
-  echo "Removing all custom networks..."
-  docker network prune -f || failed+=("prune networks")
+	echo "Removing all custom networks...";
+	docker network prune -f || failed+=("prune networks");
 
-  echo "Cleaning up build cache..."
-  docker builder prune -af || failed+=("prune build cache")
+	echo "Cleaning up build cache...";
+	docker builder prune -af || failed+=("prune build cache");
 
-  if (( ${#failed[@]} )); then
-    printf 'Docker cleanup finished with errors: %s\n' "${failed[*]}" >&2
-    return 1
-  fi
+	if (( ${#failed[@]} )); then
+		printf 'Docker cleanup finished with errors: %s\n' "${failed[*]}" >&2;
+		return 1;
+	fi;
 
-  echo "Docker cleanup complete!"
+	echo "Docker cleanup complete!";
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 # Sourced by .bash_profile for every interactive shell, so it stays cheap:
 # no package installs, no sudo prompts, no desktop settings. Installing
