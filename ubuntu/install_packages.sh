@@ -36,7 +36,7 @@ install_package() {
 sudo apt update
 
 # List of packages to check and install
-packages=("git" "curl" "wget" "jq" "tree" "htop" "ack" "mawk" "vim")
+packages=("git" "curl" "wget" "jq" "tree" "htop" "ack" "mawk" "vim" "bash-completion")
 
 # Check and install packages
 for package in "${packages[@]}"; do
