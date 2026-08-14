@@ -59,9 +59,10 @@ Create that file on each machine:
 	email = you@example.com
 ```
 
-Ordering matters if you want a different identity per directory. Anything that
-overrides the address has to come *after* the `[user]` block, because the last
-value read wins:
+For a different identity per directory, add a conditional include. Two things
+to get right: `includeIf` accepts only a `path`, never inline keys (they are
+silently ignored), so the override needs a file of its own; and it has to come
+*after* the `[user]` block, because the last value read wins.
 
 ```ini
 [user]
@@ -72,8 +73,19 @@ value read wins:
 # After [user], so the personal address wins under ~/Projects/private.
 [includeIf "gitdir:~/Projects/private/"]
 
-	path = ~/Projects/private/.gitconfig
+	path = ~/.gitconfig.private
 ```
+
+```ini
+# ~/.gitconfig.private
+[user]
+
+	email = you@personal.example
+```
+
+The included file can live anywhere. Keeping it in `$HOME` next to
+`~/.gitconfig.local` means one glob (`~/.gitconfig*`) covers both when you back
+them up.
 
 If `~/.gitconfig.local` is missing, git fails with `Author identity unknown`
 instead of committing under a wrong address.
@@ -88,12 +100,13 @@ are not in this repository:
 | `~/.path` | Additions to `$PATH`. |
 | `~/.extra` | Anything machine-specific: tool paths, work aliases, secrets. |
 | `~/.gitconfig.local` | Git identity and any private credential helpers. |
+| `~/.gitconfig.private` | Per-directory identity override, if you use one. |
 
 `bootstrap.sh` overwrites `~/.bash_profile`, so put machine-specific shell
 setup in `~/.extra` instead. Installers that append to `~/.bash_profile`
 (JetBrains Toolbox, for one) lose their changes on the next bootstrap run.
 
-Nothing backs these three files up. Keep a copy somewhere off this machine.
+Nothing backs these files up. Keep a copy somewhere off this machine.
 
 ## Setting up a new machine
 
