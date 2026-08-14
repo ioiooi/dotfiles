@@ -1,5 +1,10 @@
 # Add `~/bin` to the `$PATH`
-export PATH="$HOME/bin:$PATH";
+# .bashrc re-sources this file for every interactive shell, so guard against
+# stacking up duplicate entries in nested shells.
+case ":$PATH:" in
+	*":$HOME/bin:"*) ;;
+	*) export PATH="$HOME/bin:$PATH";;
+esac
 
 # Load dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.

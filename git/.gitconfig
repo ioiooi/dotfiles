@@ -57,10 +57,11 @@
 	fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
 	# Remove local branches whose remote tracking branch no longer exists
-	cleanup = "!git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -n 1 git branch -d"
+	# xargs -r, so an empty list does not run `git branch -d` with no argument
+	cleanup = "!git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r -n 1 git branch -d"
 
 	# Removes refs to branches which no longer exist
-	pr = "!git remote | xargs -n 1 git remote prune"
+	pr = "!git remote | xargs -r -n 1 git remote prune"
 
 	# List contributors with number of commits.
 	contributors = shortlog --summary --numbered

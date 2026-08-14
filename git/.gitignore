@@ -1,7 +1,7 @@
-# An example global gitignore file
+# Global gitignore file.
 #
-# Place a copy if this at ~/.gitignore_global
-# Run `git config --global core.excludesfile ~/.gitignore_global`
+# bootstrap.sh deploys this to ~/.gitignore, which core.excludesfile in
+# git/.gitconfig already points at.
 
 # Compiled source #
 ###################
@@ -57,5 +57,5 @@ desktop.ini
 #############
 .vscode
 .idea
-.iml
+*.iml
 *.sublime-workspace

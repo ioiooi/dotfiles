@@ -17,17 +17,19 @@ else # macOS `ls`
 	export LSCOLORS='BxBxhxDxfxhxhxhxhxcxcx'
 fi
 
-# List all files colorized in long format
-alias l="ls -lF ${colorflag}"
-
-# List all files colorized in long format, excluding . and ..
-alias la="ls -lAF ${colorflag}"
-
-# List only directories
-alias lsd="ls -lF ${colorflag} | grep --color=never '^d'"
-
 # Always use color output for `ls`
 alias ls="command ls ${colorflag}"
+
+# The three below expand the ls alias above, so they inherit the color flag.
+
+# List all files colorized in long format
+alias l="ls -lF"
+
+# List all files colorized in long format, excluding . and ..
+alias la="ls -lAF"
+
+# List only directories
+alias lsd="ls -lF | grep --color=never '^d'"
 
 # Always enable colored `grep` output
 # Note: `GREP_OPTIONS="--color=auto"` is deprecated, hence the alias usage.
@@ -42,7 +44,8 @@ alias sudo='sudo '
 alias week='date +%V'
 
 # IP addresses
-alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+# Named myip, not ip, so the ip(8) route/link/addr command stays reachable.
+alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 if [[ "$(uname -s)" == "Darwin" ]]; then
 	alias localip="ipconfig getifaddr en0"
 else
@@ -69,3 +72,5 @@ alias path='echo -e ${PATH//:/\\n}'
 
 # YOLO mode - Claude Code without safety nets 🎢
 alias yolo="claude --dangerously-skip-permissions"
+
+unset colorflag

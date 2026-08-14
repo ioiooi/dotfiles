@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-#./brew.sh
+# The scripts below are called by relative path, so run from this directory
+# regardless of where setup.sh was invoked from.
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # Execute the individual scripts
 ./install_homebrew.sh

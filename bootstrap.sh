@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+
+# Must be executed, not sourced: the strict mode and the exits below would
+# otherwise apply to the caller's interactive shell.
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  echo "Error: run this script as ./bootstrap.sh instead of sourcing it." >&2
+  return 1
+fi
+
 set -euo pipefail
 
 # Prevent running as root
@@ -50,28 +58,31 @@ createBackup() {
 
 copyFilesToHome() {
   echo "Starting file copy process..."
-  
+
   for item in "${FILES_TO_INCLUDE[@]}"; do
     local destination="$HOME/$(basename "$item")"
     echo "Processing: $item"
-    
-    if [[ -e "$destination" ]]; then
-      createBackup "$destination"
-    fi
-    
+
+    createBackup "$destination"
+
     cp -r "$item" "$HOME/"
     echo "Copied: $item -> ~"
   done
-  
-  # Source bash_profile if it exists
-  if [[ -f "$HOME/.bash_profile" ]]; then
-    source "$HOME/.bash_profile"
-    echo "Sourced .bash_profile"
+
+  # git/.gitconfig carries no identity, so git will refuse to commit until this
+  # machine-local file exists. See the README.
+  if [[ ! -f "$HOME/.gitconfig.local" ]]; then
+    echo
+    echo "Warning: ~/.gitconfig.local is missing, so git has no name or email."
+    echo "Create it with a [user] section before committing."
   fi
+
+  echo
+  echo "Done. Open a new shell to pick up the changes."
 }
 
-function askForConfirmation() {
-  read -p "This may overwrite existing files and directories in your home directory. Are you sure? (y/n) " -n 1
+askForConfirmation() {
+  read -r -p "This may overwrite existing files and directories in your home directory. Are you sure? (y/n) " -n 1
   echo ""
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     copyFilesToHome
@@ -81,12 +92,6 @@ function askForConfirmation() {
   fi
 }
 
-function main() {
-  askForConfirmation
-}
-
 echo "Starting the script..."
-main "$1"
-unset -f createBackup copyFilesToHome askForConfirmation main
-unset FILES_TO_INCLUDE BACKUP_DIR
+askForConfirmation
 echo "Script execution completed."
