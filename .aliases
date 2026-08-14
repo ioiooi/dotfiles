@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 # Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
@@ -51,10 +51,16 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
 else
 	alias localip="hostname -I | awk '{print \$1}'"
 fi
-alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
-
-# Show active network interfaces
-alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
+# All IP addresses, and the interfaces that are up. The macOS branch needs
+# ifconfig and pcregrep; on Linux ip(8) covers both without extra packages.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+	alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
+	alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
+else
+	alias ips="ip -o addr show | awk '{print \$2, \$4}'"
+	# state UP, not just `link show up`, which also lists no-carrier interfaces
+	alias ifactive="ip -brief link show up | awk '\$2 == \"UP\"'"
+fi
 
 # URL-encode strings
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))"'

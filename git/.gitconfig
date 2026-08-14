@@ -69,8 +69,10 @@
 	# Show the user email for the current repository.
 	whoami = config user.email
 
-	# resets the current branch to match the state of the corresponding remote branch
-	refresh = "!git fetch origin && git reset --hard origin/$(git symbolic-ref --short HEAD)"
+	# Discards local commits and uncommitted work to match the upstream branch.
+	# @{u} rather than origin/<branch>, so a differently named upstream still
+	# works and a missing one fails instead of resetting to the wrong branch.
+	refresh = "!git fetch && git reset --hard @{u}"
 
 	# moves files from staging area to working directory
 	unstage = !git restore --staged --
@@ -110,14 +112,14 @@
 
 	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
 	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
-	precomposeunicode = false
+	precomposeunicode = true
 
 	# Speed up commands involving untracked files such as `git status`.
 	# https://git-scm.com/docs/git-update-index#_untracked_cache
 	untrackedCache = true
 
 	# present output in a pager only when the output is longer than one terminal screen
-	pager = less -FX
+	pager = less -F
 
 [color]
 
@@ -161,8 +163,8 @@
 
 [help]
 
-	# Automatically correct and execute mistyped commands.
-	autocorrect = 1
+	# Suggest the corrected command and ask, rather than running it after 0.1s.
+	autocorrect = prompt
 
 [merge]
 

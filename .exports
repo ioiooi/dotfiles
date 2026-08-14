@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 # Make vim the default editor.
 export EDITOR='vim';
@@ -20,14 +20,15 @@ export HISTFILESIZE="${HISTSIZE}";
 export HISTCONTROL='ignoreboth';
 
 # Prefer US English and use UTF-8.
+# LANG only, deliberately not LC_ALL: LC_ALL cannot be overridden per category
+# and would discard the regional formats the desktop session sets.
 export LANG='en_US.UTF-8';
-export LC_ALL='en_US.UTF-8';
 
 # Highlight section titles in manual pages (yellow bold).
 export LESS_TERMCAP_md=$'\e[1;33m';
 
-# Don’t clear the screen after quitting a manual page.
-export MANPAGER='less -X';
+# Quit if the page fits on one screen.
+export MANPAGER='less -F';
 
 # Avoid issues with `gpg` as installed via Homebrew.
 # https://stackoverflow.com/a/42265848/96656
