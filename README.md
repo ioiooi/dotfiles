@@ -153,6 +153,7 @@ sudo snap set system refresh.retain=2
 | `docker-purge` | Remove all Docker data. Asks first. |
 | `dev-cache-clean` | Empty the npm, npx, pnpm, yarn and pip caches. |
 | `space` | Report disk, Docker and cache usage. Deletes nothing. |
+| `kernels` | Installed kernels by install date, and how full `/boot` is. Ubuntu only. |
 
 ## Customization
 

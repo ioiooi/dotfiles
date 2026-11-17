@@ -10,3 +10,25 @@ if [[ -r /usr/share/bash-completion/bash_completion ]]; then
 elif [[ -r /etc/bash_completion ]]; then
 	source /etc/bash_completion
 fi
+
+# kernels: List the installed kernels, oldest install first, and how full
+# their filesystem is.
+#
+# For picking a fallback in GRUB after a kernel update went wrong. /boot is
+# usually a small partition of its own, and kernel updates fail once it fills.
+kernels() {
+	local status package
+
+	# Only "ii": a removed kernel whose configuration remains still has a
+	# list file. That file's timestamp is when dpkg unpacked the package.
+	dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' 'linux-image-[0-9]*' 2> /dev/null |
+		while read -r status package; do
+			[[ $status == ii ]] || continue
+			echo "$(date -r "/var/lib/dpkg/info/${package}.list" +%F) ${package#linux-image-}"
+		done |
+		sort |
+		awk -v running="$(uname -r)" \
+			'{ printf "%-24s %s%s\n", $2, $1, ($2 == running ? "   running" : "") }'
+
+	df -Ph /boot | awk 'NR == 2 { printf "\n%s: %s used, %s free (%s)\n", $6, $3, $4, $5 }'
+}
