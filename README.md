@@ -120,6 +120,22 @@ Runnable from anywhere in the repository:
 Desktop configuration (keyboard layout, workspace shortcuts) is part of
 `ubuntu/setup.sh` and runs once, not on every shell start.
 
+## Cleaning up
+
+```sh
+./ubuntu/cleanup.sh   # old snap revisions, apt leftovers
+./mac/cleanup.sh      # outdated Homebrew versions
+```
+
+Run these by hand; nothing calls them. On Ubuntu, apt lists what it is about to
+remove and asks first.
+
+snap keeps three revisions of every snap by default. To keep two, the minimum:
+
+```sh
+sudo snap set system refresh.retain=2
+```
+
 ## Notable commands
 
 | Command | What it does |
