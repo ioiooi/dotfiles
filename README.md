@@ -133,7 +133,10 @@ Desktop configuration (keyboard layout, workspace shortcuts) is part of
 | `git_amend_to_commit <ref>` | Fold staged changes into an earlier commit. |
 | `dexec <container> [cmd…]` | Run a command (or a shell) in a Docker container. |
 | `docker-stop` | Stop all running containers. |
+| `docker-prune` | Remove Docker data nothing uses any more. Keeps tagged images and named volumes. |
 | `docker-purge` | Remove all Docker data. Asks first. |
+| `dev-cache-clean` | Empty the npm, npx, pnpm, yarn and pip caches. |
+| `space` | Report disk, Docker and cache usage. Deletes nothing. |
 
 ## Customization
 

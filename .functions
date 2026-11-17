@@ -148,6 +148,14 @@ docker-stop() {
 	fi;
 }
 
+# Remove Docker data nothing uses any more: stopped containers, unused
+# networks, untagged images, unused build cache and anonymous volumes. Tagged
+# images and named volumes stay, so databases survive; docker-purge is the one
+# that takes those too.
+docker-prune() {
+	docker system prune -f --volumes;
+}
+
 # Remove all Docker data. Irreversible, so it asks first.
 docker-purge() {
 	echo "WARNING: This will remove ALL Docker data (containers, images, volumes, networks, build cache)!";
@@ -198,4 +206,109 @@ docker-purge() {
 	fi;
 
 	echo "Docker cleanup complete!";
+}
+
+# Where a package manager keeps its cache. Asked from $HOME, so a project's own
+# configuration cannot answer with a directory inside the repository.
+_dev_cache_dir() {
+	(
+		cd "${HOME}" || exit;
+		local dir;
+		case "$1" in
+			npm) npm config get cache;;
+			# npx keeps what it installs beside npm's cache, where
+			# `npm cache clean` leaves it alone.
+			npx) dir=$(npm config get cache) && echo "${dir}/_npx";;
+			pnpm) pnpm store path;;
+			yarn) yarn cache dir;;
+			pip3) pip3 cache dir;;
+		esac;
+	) 2> /dev/null;
+}
+
+# dev-cache-clean: Empty the npm, npx, pnpm, yarn and pip caches.
+#
+# A troubleshooting step first, for when installs misbehave; the space it frees
+# is a bonus. Everything removed is downloaded again on demand, so it does not
+# ask. pnpm only lets go of packages no project uses, as projects link into
+# its store.
+#
+dev-cache-clean() {
+	local tool dir out before after;
+	local -a cmd failed=();
+
+	for tool in npm npx pnpm yarn pip3; do
+		if ! hash "$tool" &> /dev/null; then
+			echo "${tool}: not installed, skipped";
+			continue;
+		fi;
+
+		dir=$(_dev_cache_dir "$tool");
+		if [[ -z "$dir" ]]; then
+			echo "${tool}: could not find its cache, skipped" >&2;
+			failed+=("$tool");
+			continue;
+		fi;
+
+		case "$tool" in
+			npm) cmd=(npm cache clean --force);;
+			npx) cmd=(rm -rf -- "$dir");;
+			pnpm) cmd=(pnpm store prune);;
+			yarn) cmd=(yarn cache clean);;
+			pip3) cmd=(pip3 cache purge);;
+		esac;
+
+		before=$(du -sk -- "$dir" 2> /dev/null | cut -f1);
+
+		# From $HOME, for the same reason as _dev_cache_dir. The tools are
+		# chatty, so their output only shows when they fail.
+		if out=$(cd "${HOME}" && "${cmd[@]}" 2>&1); then
+			after=$(du -sk -- "$dir" 2> /dev/null | cut -f1);
+			echo "${tool}: freed $(( (${before:-0} - ${after:-0}) / 1024 )) MB in ${dir}";
+		else
+			printf '%s\n' "$out" >&2;
+			failed+=("$tool");
+		fi;
+	done;
+
+	if (( ${#failed[@]} )); then
+		printf 'dev-cache-clean finished with errors: %s\n' "${failed[*]}" >&2;
+		return 1;
+	fi;
+}
+
+# space: Report where disk space goes. Deletes nothing.
+#
+# Shows the disk holding $HOME, Docker's usage, the package manager caches,
+# the largest cache folders and old snap revisions. The headings name the
+# command that clears each one.
+#
+space() {
+	local tool dir;
+
+	echo "== Disk ==";
+	df -h -- "${HOME}";
+
+	if hash docker &> /dev/null; then
+		printf '\n== Docker (docker-prune) ==\n';
+		docker system df;
+	fi;
+
+	printf '\n== Package manager caches (dev-cache-clean) ==\n';
+	for tool in npm npx pnpm yarn pip3; do
+		hash "$tool" &> /dev/null || continue;
+		dir=$(_dev_cache_dir "$tool");
+		[[ -d "$dir" ]] && du -sh -- "$dir";
+	done;
+
+	for dir in "${HOME}/.cache" "${HOME}/Library/Caches"; do
+		[[ -d "$dir" ]] || continue;
+		printf '\n== Largest folders in %s ==\n' "$dir";
+		( shopt -s dotglob nullglob; du -sh -- "$dir"/* 2> /dev/null ) | sort -rh | head -n 10;
+	done;
+
+	if hash snap &> /dev/null; then
+		printf '\n== Old snap revisions ==\n';
+		snap list --all | awk '/disabled/ { print $1, $3; n++ } END { if (!n) print "none" }';
+	fi;
 }
