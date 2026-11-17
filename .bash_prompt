@@ -13,50 +13,79 @@ elif [[ $TERM = xterm || -z $TERM || $TERM = dumb ]] && infocmp xterm-256color >
 	export TERM='xterm-256color';
 fi;
 
+# One git call answers both questions the prompt needs: which worktree this is —
+# its root rather than $PWD, so the title holds in subdirectories — and the
+# branch.
+prompt_location() {
+	local top='' branch='';
+
+	{ read -r top; read -r branch; } < <(
+		git rev-parse --show-toplevel --abbrev-ref HEAD 2> /dev/null);
+
+	prompt_branch='';
+
+	case "${top}" in
+		'') # Outside a repository, show what \W used to.
+			[ "${PWD}" = "${HOME}" ] && prompt_title='~' || prompt_title="${PWD##*/}";
+			return;;
+		"${HOME}") prompt_title='~';;
+		"${HOME}/Projects/"*) prompt_title="${top#"${HOME}/Projects/"}";;
+		*) prompt_title="${top##*/}";;
+	esac;
+
+	# --abbrev-ref reports the literal HEAD when detached, and before the first
+	# commit. Fall back the way this prompt always has.
+	if [ -z "${branch}" ] || [ "${branch}" = 'HEAD' ]; then
+		branch="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+			git describe --all --exact-match HEAD 2> /dev/null || \
+			git rev-parse --short HEAD 2> /dev/null || \
+			echo '(unknown)')";
+	fi;
+	prompt_branch="${branch}";
+}
+
+# Emitted here rather than from PS1, so the escape never enters the prompt
+# string and needs no \[ \] zero-width markers.
+prompt_command() {
+	prompt_location;
+	printf '\033]0;%s\007' "${prompt_title}";
+}
+
+# .bashrc re-sources .bash_profile for every interactive shell, so guard against
+# stacking up duplicates in nested shells. Appended rather than prepended: a
+# login shell already carries VTE's __vte_prompt_command, which sets a title of
+# its own, and the last one to run wins.
+case ";${PROMPT_COMMAND};" in
+	*';prompt_command;'*) ;;
+	*) PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND};}prompt_command";;
+esac
+
 prompt_git() {
 	local s='';
-	local branchName='';
 
-	# Check if the current directory is in a Git repository.
-	git rev-parse --is-inside-work-tree &>/dev/null || return;
+	# prompt_location has already established whether this is a repository.
+	[ -n "${prompt_branch}" ] || return;
 
-	# Check for what branch we’re on.
-	# Get the short symbolic ref. If HEAD isn’t a symbolic ref, get a
-	# tracking remote branch or tag. Otherwise, get the
-	# short SHA for the latest commit, or give up.
-	branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
-		git describe --all --exact-match HEAD 2> /dev/null || \
-		git rev-parse --short HEAD 2> /dev/null || \
-		echo '(unknown)')";
-
-	# Early exit for Chromium & Blink repo, as the dirty check takes too long.
-	# Thanks, @paulirish!
-	# https://github.com/paulirish/dotfiles/blob/dd33151f/.bash_prompt#L110-L123
-	repoUrl="$(git config --get remote.origin.url)";
-	if grep -q 'chromium/src.git' <<< "${repoUrl}"; then
-		s+='*';
-	else
-		# Check for uncommitted changes in the index.
-		if ! $(git diff --quiet --ignore-submodules --cached); then
-			s+='+';
-		fi;
-		# Check for unstaged changes.
-		if ! $(git diff-files --quiet --ignore-submodules --); then
-			s+='!';
-		fi;
-		# Check for untracked files.
-		if [ -n "$(git ls-files --others --exclude-standard)" ]; then
-			s+='?';
-		fi;
-		# Check for stashed files.
-		if $(git rev-parse --verify refs/stash &>/dev/null); then
-			s+='$';
-		fi;
+	# Check for uncommitted changes in the index.
+	if ! $(git diff --quiet --ignore-submodules --cached); then
+		s+='+';
+	fi;
+	# Check for unstaged changes.
+	if ! $(git diff-files --quiet --ignore-submodules --); then
+		s+='!';
+	fi;
+	# Check for untracked files.
+	if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+		s+='?';
+	fi;
+	# Check for stashed files.
+	if $(git rev-parse --verify refs/stash &>/dev/null); then
+		s+='$';
 	fi;
 
 	[ -n "${s}" ] && s=" [${s}]";
 
-	echo -e "${1}${branchName}${2}${s}";
+	echo -e "${1}${prompt_branch}${2}${s}";
 }
 
 if tput setaf 1 &> /dev/null; then
@@ -104,8 +133,7 @@ else
 fi;
 
 # Set the terminal title and prompt.
-PS1="\[\033]0;\W\007\]"; # working directory base name
-PS1+="\[${bold}\]\n"; # newline
+PS1="\[${bold}\]\n"; # newline
 PS1+="\[${userStyle}\]\u"; # username
 PS1+="\[${white}\] at ";
 PS1+="\[${hostStyle}\]\h"; # host
